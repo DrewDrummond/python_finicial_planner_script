@@ -1,11 +1,12 @@
 # Importing necessary libraries
-import pandas as pd
-import re
+import pandas as pd  # Pandas is a powerful data manipulation library
+import re  # The re module provides support for regular expressions
 
 class ExpenseTracker:
     def __init__(self, file_path):
-        self.file_path = file_path
-        self.df = None
+        self.file_path = file_path  # Path to the CSV file containing the transaction data
+        self.df = None  # DataFrame to store the transaction data
+        # Dictionary to categorize transactions based on keywords in the description
         self.categories = {
             'food': [
                 r'MCDONALD\S*', r'TACO BELL', r'CHICK-FIL-A', r'OLIVE GARDEN', 
@@ -15,15 +16,15 @@ class ExpenseTracker:
                 r'DUNKIN', r'DETWILER\'S FARM MARKET', r'PEI WEI', r'NORI JAPANESE AND THAI R', 
                 r'TST\* South Philly Cheeses', r'DD/BR #350919 Q35', r'POPEYES', r'MICHELANGELO', 
                 r'JA RAMEN', r'SUPER BUFFET', r'TST\* South Philly CheesesBradenton FL', 
-                r'PETCO 2710 SARASOTA FL', r'TARGET 00020347 SARASOTA FL', r'PUBLIX', r'TEA', r'CRUMBL', r'SMOOTHIE'  # Food and grocery stores
+                r'PETCO 2710 SARASOTA FL', r'TARGET 00020347 SARASOTA FL', r'PUBLIX', r'TEA', r'CRUMBL', r'SMOOTHIE'  # Keywords for food category
             ],
             'material': [
                 r'CHEGG ORDER', r'IBI\*FABLETICS.COM', r'KOHL\'S', r'DICK\'S Sporting Goods', 
                 r'EDGEFIELD GIFT SHOP', r'TACOS GONE MOBILE LLC', r'CARIBOU # EINSTEIN #3649',
-                r'BIG DANS CAR WASH BRADENBRADENTON FL', r'PETCO 2710 SARASOTA FL', r'BJJ'  # Clothes, personal items, and car wash
+                r'BIG DANS CAR WASH BRADENBRADENTON FL', r'PETCO 2710 SARASOTA FL', r'BJJ'  # Keywords for material category
             ],
             'gas': [
-                r'EXXON', r'SHELL OIL', r'76 - SEI 35335', r'WAWA'  # Gas stations
+                r'EXXON', r'SHELL OIL', r'76 - SEI 35335', r'WAWA'  # Keywords for gas category
             ],
             'entertainment': [
                 r'HI TEC PAINTBALL PARK', r'K1 SPEED TAMPA', r'THE MELTING POT', 
@@ -40,67 +41,99 @@ class ExpenseTracker:
                 r'WDW RONTO ROASTERS 407-828-5630 FL', r"WDW KATSAKA'SKETTLE LAKE BUENA VIFL",
                 r'WDW CHURRO CART LAKE BUENA VIFL', r"WDW OGA'S CANTINA LAKE BUENA VIFL",
                 r'RACETRAC100 00001008 BRADENTON FL', r'DAIQUIRI DECK INC SARASOTA FL',
-                r'K1 SPEED - TAMPA, FL TAMPA FL', r'AMF'  # Entertainment and recreational activities
+                r'K1 SPEED - TAMPA, FL TAMPA FL', r'AMF'  # Keywords for entertainment category
             ],
             'reoccuring': [
-                r'ONLINE PAYMENT THANK YOU', r'GITHUB', r'AMZN Mktp US', 
-                r'PHOTOENFORCEMENT PROGRAM', r'PYTHONANYWHERE', r'THANK YOU'  # Subscription and regular services
-            ]}
-   
+                r'GITHUB', r'AMZN Mktp US', 
+                r'PHOTOENFORCEMENT PROGRAM', r'PYTHONANYWHERE',  # Keywords for reoccurring category
+            ],
+            'credit card payment': [r'ONLINE PAYMENT THANK YOU', r'AUTOMATIC PAYMENT']  # Keywords for credit card payment category
+        }
 
     def load_csv(self):
+        # Try to load the CSV file into a DataFrame
         try:
             self.df = pd.read_csv(self.file_path, header=None, names=['Date y/m/d', 'Amount', 'Symbol', 'Symbol2', 'Description'])
             print("CSV file loaded successfully.")
         except Exception as e:
+            # If there's an error, print it
             print(f"Error loading CSV file: {e}")
 
     def clean_data(self):
         # Keep only relevant columns
         self.df = self.df[['Date y/m/d', 'Amount', 'Description']]
 
-        # Clean the Amount column
-        self.df['Amount'] = self.df['Amount'].replace('[^\d.-]', '', regex=True)
-        self.df['Amount'] = self.df['Amount'].replace('', pd.NA)
-        self.df['Amount'] = pd.to_numeric(self.df['Amount'], errors='coerce')
-    
+        # Remove any non-numeric characters from the Amount column and convert to numeric
+        self.df['Amount'] = self.df['Amount'].replace('[^\d.-]', '', regex=True)  # Use regex to remove unwanted characters
+        self.df['Amount'] = self.df['Amount'].replace('', pd.NA)  # Replace empty strings with NaN
+        self.df['Amount'] = pd.to_numeric(self.df['Amount'], errors='coerce')  # Convert to numeric, setting invalid parsing as NaN
 
     def categorize_transaction(self, description):
+        # Check each description against the keywords in each category
         for category, keywords in self.categories.items():
             for keyword in keywords:
-                if re.search(keyword, description, re.IGNORECASE):  # Case-insensitive search
+                if re.search(keyword, description, re.IGNORECASE):  # Case-insensitive search using regex
                     return category
         return 'other'  # Default category if no match is found
 
     def apply_categorization(self):
-        self.df['Category'] = self.df['Description'].apply(lambda x: self.categorize_transaction(x))
+        # Apply categorization to each transaction based on the description
+        self.df['Category'] = self.df['Description'].apply(lambda x: self.categorize_transaction(x))  # Use apply to run categorize_transaction on each description
 
     def process_dates(self):
-        self.df['Date y/m/d'] = pd.to_datetime(self.df['Date y/m/d'], errors='coerce', infer_datetime_format=True)
-        self.df = self.df.dropna(subset=['Date y/m/d'])
-        self.df['Date y/m/d'] = self.df['Date y/m/d'].dt.date
+        # Convert the date column to datetime format
+        self.df['Date y/m/d'] = pd.to_datetime(self.df['Date y/m/d'], errors='coerce')  # Convert to datetime, coercing errors to NaT
+        # Drop any rows with invalid dates
+        self.df = self.df.dropna(subset=['Date y/m/d'])  # Drop rows where 'Date y/m/d' is NaT
 
     def sort_data(self):
-        self.df = self.df.sort_values(by=['Date y/m/d', 'Category'])
+        # Sort the DataFrame by date and category
+        self.df = self.df.sort_values(by=['Date y/m/d', 'Category'])  # Sort by date and then by category
+
+    def display_monthly_totals(self, grouped):
+        # Calculate and return the total spent for each month
+        monthly_totals = []
+        for name, group in grouped:
+            expenses = group[group['Amount'] < 0]  # Consider only expenses (negative amounts)
+            total_spent = expenses['Amount'].sum()  # Sum the amounts
+            monthly_totals.append(f"Total spent in {name}: ${total_spent:.2f}")  # Append the formatted total
+        return monthly_totals
 
     def display_data(self):
-        pd.set_option('display.max_rows', None)  # Show all rows
-        pd.set_option('display.max_columns', None)  # Show all columns
-        pd.set_option('display.width', None)  # Adjust the width to avoid line breaks
-        pd.set_option('display.max_colwidth', None)  # Show full column content
-        print("\nCredit Card Transactions Sorted by Date and Category:\n")
-        print(self.df)
+        # Set display options for better readability
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', None)
+        
+        # Check if the date column is in datetime format
+        if self.df['Date y/m/d'].dtype == '<M8[ns]':  # '<M8[ns]' indicates datetime64[ns] dtype
+            self.df['YearMonth'] = self.df['Date y/m/d'].dt.to_period('M')  # Extract YearMonth period from date
+            grouped = self.df.groupby('YearMonth')  # Group the DataFrame by YearMonth
+            
+            # Print transactions for each month
+            for name, group in grouped:
+                print(f"\nTransactions for {name}:\n")
+                print(group[['Date y/m/d', 'Amount', 'Description', 'Category']])
+            
+            # Print monthly totals at the end
+            monthly_totals = self.display_monthly_totals(grouped)
+            print("\nMonthly totals:\n")
+            for total in monthly_totals:
+                print(total)
+        else:
+            print("Date conversion failed; check data format.")
 
     def run(self):
-        self.load_csv()
-        self.clean_data()
-        self.apply_categorization()
-        self.process_dates()
-        self.sort_data()
-        self.display_data()
+        # Run all the methods in sequence to process and display the data
+        self.load_csv()  # Load the data from the CSV file
+        self.clean_data()  # Clean the data to ensure it's in the right format
+        self.apply_categorization()  # Categorize each transaction
+        self.process_dates()  # Convert and validate the date format
+        self.sort_data()  # Sort the data by date and category
+        self.display_data()  # Display the processed data and monthly totals
 
 # Instantiate and run the ExpenseTracker
 credit_csv_file_path = "/Users/drewdrummond/Documents/coding projects/Python_expense_tracker/CSV's/new_credit.csv"
 tracker = ExpenseTracker(credit_csv_file_path)
 tracker.run()
-
