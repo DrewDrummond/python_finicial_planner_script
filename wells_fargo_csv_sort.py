@@ -1,4 +1,3 @@
-# Importing necessary libraries
 import pandas as pd  # Pandas is a powerful data manipulation library
 import re  # The re module provides support for regular expressions
 
@@ -116,6 +115,9 @@ class ExpenseTracker:
                 print(f"\nTransactions for {name}:\n")
                 print(group[['Date y/m/d', 'Amount', 'Description', 'Category']])
             
+            # Print monthly category totals and percentages
+            self.display_monthly_category_totals(grouped)
+            
             # Print monthly totals at the end
             monthly_totals = self.display_monthly_totals(grouped)
             print("\nMonthly totals:\n")
@@ -123,6 +125,22 @@ class ExpenseTracker:
                 print(total)
         else:
             print("Date conversion failed; check data format.")
+
+    # Add this method to calculate and display the amount and percentage spent on each category for each month
+    def display_monthly_category_totals(self, grouped):
+        for name, group in grouped:
+            print(f"\nCategory Totals and Percentages for {name}:\n")
+            
+            total_spent = group['Amount'][group['Amount'] < 0].sum()  # Calculate total spent for the month
+            category_totals = group[group['Amount'] < 0].groupby('Category')['Amount'].sum()  # Calculate total spent per category for the month
+            
+            # Calculate percentage spent per category for the month
+            category_percentages = (category_totals / total_spent) * 100
+            
+            # Print the totals and percentages for each category for the month
+            for category, total in category_totals.items():
+                percentage = category_percentages[category]
+                print(f"Category: {category}, Total Spent: ${total:.2f}, Percentage: {percentage:.2f}%")
 
     def run(self):
         # Run all the methods in sequence to process and display the data
