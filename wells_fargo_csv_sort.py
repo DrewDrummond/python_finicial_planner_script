@@ -1,5 +1,5 @@
-import pandas as pd  # Pandas is a powerful data manipulation library
-import re  # The re module provides support for regular expressions
+import pandas as pd
+import re
 
 class ExpenseTracker:
     def __init__(self, file_path):
@@ -8,45 +8,41 @@ class ExpenseTracker:
         # Dictionary to categorize transactions based on keywords in the description
         self.categories = {
             'food': [
-                r'MCDONALD\S*', r'TACO BELL', r'CHICK-FIL-A', r'OLIVE GARDEN', 
-                r'7-ELEVEN', r'CHIPOTLE', r'CULVERS', r'CHINA TASTE', r'SARASOTA BOBA TEA',
-                r'DAIRY QUEEN', r'TST\* THE MELTING POT', r'FIRST WATCH', r'TARGET\.COM',
-                r'DING TEA', r'SQ \*SIESTA KEY FUDGE FAC', r'WAWA', r'3 NATIVES', r'PY \*PDQ', 
-                r'DUNKIN', r'DETWILER\'S FARM MARKET', r'PEI WEI', r'NORI JAPANESE AND THAI R', 
-                r'TST\* South Philly Cheeses', r'DD/BR #350919 Q35', r'POPEYES', r'MICHELANGELO', 
-                r'JA RAMEN', r'SUPER BUFFET', r'TST\* South Philly CheesesBradenton FL', 
-                r'PETCO 2710 SARASOTA FL', r'TARGET 00020347 SARASOTA FL', r'PUBLIX', r'TEA', r'CRUMBL', r'SMOOTHIE'  # Keywords for food category
+                r'mcdonald\'s', r'taco bell', r'chick-fil-a', r'olive garden', 
+                r'7-eleven', r'chipotle', r'culvers', r'china taste', r'sarasota boba tea',
+                r'dairy queen', r'tst\* the melting pot', r'first watch', r'target\.com',
+                r'ding tea', r'sq \*siesta key fudge fac', r'wawa', r'3 natives', r'py \*pdq', 
+                r'dunkin', r'detwiler\'s farm market', r'pei wei', r'nori japanese and thai r', 
+                r'tst\* south philly cheeses', r'dd/br #350919 q35', r'popeyes', r'michelangelo', 
+                r'ja ramen', r'super buffet', r'tst\* south philly cheesesbradenton fl', 
+                r'petco 2710 sarasota fl', r'target 00020347 sarasota fl', r'publix', r'tea', r'crumbl', r'smoothie'
             ],
             'material': [
-                r'CHEGG ORDER', r'IBI\*FABLETICS.COM', r'KOHL\'S', r'DICK\'S Sporting Goods', 
-                r'EDGEFIELD GIFT SHOP', r'TACOS GONE MOBILE LLC', r'CARIBOU # EINSTEIN #3649',
-                r'BIG DANS CAR WASH BRADENBRADENTON FL', r'PETCO 2710 SARASOTA FL', r'BJJ'  # Keywords for material category
+                r'chegg order', r'ibi\*fabletics.com', r'kohl\'s', r'dick\'s sporting goods', 
+                r'edgefield gift shop', r'tacos gone mobile llc', r'caribou # einstein #3649',
+                r'big dans car wash bradenbradenton fl', r'petco 2710 sarasota fl', r'bjj'
             ],
             'gas': [
-                r'EXXON', r'SHELL OIL', r'76 - SEI 35335', r'WAWA'  # Keywords for gas category
+                r'exxon', r'shell oil', r'76 - sei 35335', r'wawa'
             ],
             'entertainment': [
-                r'HI TEC PAINTBALL PARK', r'K1 SPEED TAMPA', r'THE MELTING POT', 
-                r'PAR\'SMOOTHIE KING', r'RACETRAC', r'K1 SPEED',
-                r'DAIQUIRI DECK INC', r'REG HOLLYWOOD', r'SUNCOAST GOLF CENTER',
-                r'SQ \*CHAMPAGNE POETRY PATI', r'MULTNOMAH FALLS BRIDAL VEIL',
-                r'MSP AIRP LEEANN CHIN', r'SQ \*ROCKY MOUNTAIN CHOCOL', r'ROASTED NUTS LLC',
-                r'WDW POPCORN CARTS LAKE BUENA VIFL', r'DISNEY MK PARKING LAKE BUENA VIFL',
-                r"WDW PRINCE ERIC'S LAKE BUENA VIFL", r'WDW POPCORN CARTS LAKE BUENA VIFL',
-                r'WDW ICE CREAM CARTS LAKE BUENA VIFL', r'WDW WESTWARD HO LAKE BUENA VIFL',
-                r'WDW SLEEPY HOLLOW 407-828-5630 FL', r'WDW CHESHIRE CAFE LAKE BUENA VIFL',
-                r'WDW THE FRIARS NOOK LAKE BUENA VIFL', r'DISNEY ST PARKING LAKE BUENA VIFL',
-                r'WDW MILK STAND LAKE BUENA VIFL', r"WDW ROSIE'S 407-828-5630 FL",
-                r'WDW RONTO ROASTERS 407-828-5630 FL', r"WDW KATSAKA'SKETTLE LAKE BUENA VIFL",
-                r'WDW CHURRO CART LAKE BUENA VIFL', r"WDW OGA'S CANTINA LAKE BUENA VIFL",
-                r'RACETRAC100 00001008 BRADENTON FL', r'DAIQUIRI DECK INC SARASOTA FL',
-                r'K1 SPEED - TAMPA, FL TAMPA FL', r'AMF'  # Keywords for entertainment category
+                r'hi tec paintball park', r'k1 speed tampa', r'the melting pot', 
+                r'par\'smoothie king', r'racetrac', r'k1 speed', r'daiquiri deck inc', 
+                r'reg hollywood', r'suncoast golf center', r'sq \*champagne poetry pati', 
+                r'multnomah falls bridal veil', r'msp airp leeann chin', r'sq \*rocky mountain chocol', 
+                r'roasted nuts llc', r'wdw popcorn carts lake buena vifl', r'disney mk parking lake buena vifl', 
+                r"wdw prince eric's lake buena vifl", r'wdw popcorn carts lake buena vifl', r'wdw ice cream carts lake buena vifl', 
+                r'wdw westward ho lake buena vifl', r'wdw sleepy hollow 407-828-5630 fl', r'wdw cheshire cafe lake buena vifl', 
+                r'wdw the friars nook lake buena vifl', r'disney st parking lake buena vifl', r'wdw milk stand lake buena vifl', 
+                r"wdw rosie's 407-828-5630 fl", r'wdw ronto roasters 407-828-5630 fl', r"wdw katsaka'skettle lake buena vifl", 
+                r'wdw churro cart lake buena vifl', r"wdw oga's cantina lake buena vifl", r'racetrac100 00001008 bradenton fl', 
+                r'daiquiri deck inc sarasota fl', r'k1 speed - tampa, fl tampa fl', r'amf'
             ],
             'reoccuring': [
-                r'GITHUB', r'AMZN Mktp US', 
-                r'PHOTOENFORCEMENT PROGRAM', r'PYTHONANYWHERE',  # Keywords for reoccurring category
+                r'github', r'amzn mktp us', 
+                r'photoenforcement program', r'pythonanywhere'
             ],
-            'credit card payment': [r'ONLINE PAYMENT THANK YOU', r'AUTOMATIC PAYMENT']  # Keywords for credit card payment category
+            'credit card payment': [r'online payment thank you', r'automatic payment']
         }
 
     def load_csv(self):
@@ -61,19 +57,23 @@ class ExpenseTracker:
     def clean_data(self):
         # Keep only relevant columns
         self.df = self.df[['Date y/m/d', 'Amount', 'Description']]
-
         # Remove any non-numeric characters from the Amount column and convert to numeric
         self.df['Amount'] = self.df['Amount'].replace('[^\d.-]', '', regex=True)  # Use regex to remove unwanted characters
         self.df['Amount'] = self.df['Amount'].replace('', pd.NA)  # Replace empty strings with NaN
         self.df['Amount'] = pd.to_numeric(self.df['Amount'], errors='coerce')  # Convert to numeric, setting invalid parsing as NaN
 
     def categorize_transaction(self, description):
-        # Check each description against the keywords in each category
+        description = description.lower()  # Convert description to lowercase for case-insensitive matching
+        category_scores = {category: 0 for category in self.categories}  # Initialize scores for each category
+
         for category, keywords in self.categories.items():
             for keyword in keywords:
-                if re.search(keyword, description, re.IGNORECASE):  # Case-insensitive search using regex
-                    return category
-        return 'other'  # Default category if no match is found
+                if re.search(keyword, description, re.IGNORECASE):  # Use regex to search for the keyword in the description
+                    category_scores[category] += 1  # Increment the score for the matched category
+
+        # Determine the category with the highest score
+        best_category = max(category_scores, key=category_scores.get)
+        return best_category if category_scores[best_category] > 0 else 'other'  # Return 'other' if no category has a positive score
 
     def apply_categorization(self):
         # Apply categorization to each transaction based on the description
@@ -118,19 +118,15 @@ class ExpenseTracker:
             # Print monthly category totals and percentages
             self.display_monthly_category_totals(grouped)
             
-            # Print monthly totals at the end
-            monthly_totals = self.display_monthly_totals(grouped)
-            print("\nMonthly totals:\n")
-            for total in monthly_totals:
-                print(total)
         else:
             print("Date conversion failed; check data format.")
 
-    # Add this method to calculate and display the amount and percentage spent on each category for each month
     def display_monthly_category_totals(self, grouped):
+        """
+        Calculate and display the amount and percentage spent on each category for each month.
+        """
         for name, group in grouped:
-            print(f"\nCategory Totals and Percentages for {name}:\n")
-            
+            print(f"\nTotal spent in {name}: ${group['Amount'][group['Amount'] < 0].sum():.2f}")
             total_spent = group['Amount'][group['Amount'] < 0].sum()  # Calculate total spent for the month
             category_totals = group[group['Amount'] < 0].groupby('Category')['Amount'].sum()  # Calculate total spent per category for the month
             
@@ -140,7 +136,7 @@ class ExpenseTracker:
             # Print the totals and percentages for each category for the month
             for category, total in category_totals.items():
                 percentage = category_percentages[category]
-                print(f"Category: {category}, Total Spent: ${total:.2f}, Percentage: {percentage:.2f}%")
+                print(f"    - {category}: ${abs(total):.2f}, = {percentage:.2f}%")  # Indent for better readability
 
     def run(self):
         # Run all the methods in sequence to process and display the data
