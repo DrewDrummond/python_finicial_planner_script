@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-class ExpenseTracker:
+class CreditTracker:
     def __init__(self, file_path):
         self.file_path = file_path  # Path to the CSV file containing the transaction data
         self.df = None  # DataFrame to store the transaction data
@@ -122,20 +122,28 @@ class ExpenseTracker:
             print("Date conversion failed; check data format.")
 
     def display_monthly_category_totals(self, grouped):
-        """
-        Calculate and display the amount and percentage spent on each category for each month.
-        """
         for name, group in grouped:
-            print(f"\nTotal spent in {name}: ${group['Amount'][group['Amount'] < 0].sum():.2f}")
             total_spent = group['Amount'][group['Amount'] < 0].sum()  # Calculate total spent for the month
+            print(f"\nTotal spent in {name}: ${total_spent:.2f}")  # Print total spent for the month
+            
             category_totals = group[group['Amount'] < 0].groupby('Category')['Amount'].sum()  # Calculate total spent per category for the month
             
             # Calculate percentage spent per category for the month
             category_percentages = (category_totals / total_spent) * 100
             
+            # Combine totals and percentages into a DataFrame for sorting
+            category_stats = pd.DataFrame({
+                'Total': category_totals,
+                'Percentage': category_percentages
+            })
+            
+            # Sort the categories by percentage in descending order
+            category_stats = category_stats.sort_values(by='Percentage', ascending=False)
+            
             # Print the totals and percentages for each category for the month
-            for category, total in category_totals.items():
-                percentage = category_percentages[category]
+            for category, stats in category_stats.iterrows():
+                total = stats['Total']
+                percentage = stats['Percentage']
                 print(f"    - {category}: ${abs(total):.2f}, = {percentage:.2f}%")  # Indent for better readability
 
     def run(self):
@@ -146,8 +154,24 @@ class ExpenseTracker:
         self.process_dates()  # Convert and validate the date format
         self.sort_data()  # Sort the data by date and category
         self.display_data()  # Display the processed data and monthly totals
+        
 
+class SavingsTracker:
+    def __init__(self, file_path):
+        self.file_path = file_path
+        self.df = None
+
+        self.categories = {
+        
+        }
+        
+
+        
+        
+        
+        
+        
 # Instantiate and run the ExpenseTracker
 credit_csv_file_path = "/Users/drewdrummond/Documents/coding projects/Python_expense_tracker/CSV's/new_credit.csv"
-tracker = ExpenseTracker(credit_csv_file_path)
+tracker = CreditTracker(credit_csv_file_path)
 tracker.run()
