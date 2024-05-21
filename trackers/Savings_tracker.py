@@ -84,6 +84,16 @@ class SavingsTracker:
         pd.set_option('display.max_columns', None)
         pd.set_option('display.width', None)
         pd.set_option('display.max_colwidth', None)
+        
+    def display_sorted_monthly_transactions(self):
+        self.df['YearMonth'] = self.df['Date y/m/d'].dt.to_period('M')  # Extract YearMonth period from date
+        grouped = self.df.groupby('YearMonth')  # Group the DataFrame by YearMonth
+
+        for name, group in grouped:
+            print(f"\nTransactions for {name}:\n")
+            sorted_group = group.sort_values(by=['Category', 'Date y/m/d'])  # Sort within each month by category and date
+            print(sorted_group[['Date y/m/d', 'Amount', 'Description', 'Category']])
+
     
     def display_monthly_category_totals(self):
         self.df['YearMonth'] = self.df['Date y/m/d'].dt.to_period('M')  # Extract YearMonth period from date
@@ -122,6 +132,7 @@ class SavingsTracker:
         self.process_dates()  # Convert and validate the date format
         self.sort_data()  # Sort the data by date and category
         self.display_data()  # Display the cleaned and categorized data
+        self.display_sorted_monthly_transactions()
         self.display_monthly_category_totals()  # Display monthly category totals
 
 
