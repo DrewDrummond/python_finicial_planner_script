@@ -1,3 +1,5 @@
+"""this will keep track of the user's credit card transactions and categorize them based on keywords in the description"""
+
 import pandas as pd
 import re
 

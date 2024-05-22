@@ -1,3 +1,6 @@
+""" this will keep track fo the net income/payments of the user's savings account and display them
+"""
+
 import pandas as pd
 import re
 
@@ -19,11 +22,9 @@ class SavingsTracker:
                 r'ONLINE TRANSFER REF #IB',
                 r'ZELLE TO',
                 r'PRIZEPICKS INTERNET',
+                r'ONLINE TRANSFER TO DRUMMOND D',
                 r'ONLINE TRANSFER TO DRUMMOND D'
-            ],
-            'ignore': [
-                r'ONLINE TRANSFER TO DRUMMOND D',   
-            ],
+            ]
 }
 
     def load_csv(self):
@@ -100,12 +101,17 @@ class SavingsTracker:
         grouped = self.df.groupby('YearMonth')  # Group the DataFrame by YearMonth
 
         for name, group in grouped:
-            total_spent = group['Amount'].sum()  # Calculate total for the month
-            print(f"\nTotal in {name}: ${total_spent:.2f}")  # Print total for the month
+            total_income = group[group['Amount'] > 0]['Amount'].sum()  # Calculate total income for the month
+            total_spent = group[group['Amount'] < 0]['Amount'].sum()  # Calculate total expenses for the month (negative values)
+            profit = total_income + total_spent  # Calculate profit for the month
+            profit_percentage = (profit / total_income) * 100 if total_income != 0 else 0  # Calculate profit percentage
+
+            print(f"\nTotal in {name}: ${total_income:.2f} ({profit_percentage:.2f}% profit)")  # Print total for the month
             
             category_totals = group.groupby('Category')['Amount'].sum()  # Calculate total per category for the month
             # Calculate percentage per category for the month
-            category_percentages = (category_totals / total_spent) * 100
+            total_spent_absolute = abs(total_spent)  # Use absolute value for calculating percentages
+            category_percentages = (category_totals / total_spent_absolute) * 100
             
             # Combine totals and percentages into a DataFrame for sorting
             category_stats = pd.DataFrame({
@@ -120,7 +126,8 @@ class SavingsTracker:
             for category, stats in category_stats.iterrows():
                 total = stats['Total']
                 percentage = stats['Percentage']
-                print(f"    - {category}: ${abs(total):.2f}, = {percentage:.2f}%")  # Indent for better readability
+                print(f"    - {category}: ${total:.2f} ({percentage:.2f}%)")  # Indent for readability and add percentage
+
 
     def run(self):
         """
