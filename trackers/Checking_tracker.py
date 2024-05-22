@@ -10,13 +10,19 @@ class CheckingTracker:
         # Dictionary to categorize transactions based on keywords in the description
         self.categories = {
             'reoccurring': [
-                r'netflix', r'spotify', r'prime', r'amazon prime', r'google storage', r'dropbox', r'hulu', r'patreon'
+                r'reoccuring', r'microsoft', r'apple', 
             ],
             'target': [
                 r'target'
             ],
             'transfers': [
-                r'transfer', r'internal transfer', r'wire transfer', r'paypal transfer', r'bank transfer'
+                r'transfer',
+            ], 
+            'income': [
+                r'zelle from', 
+            ],
+            'payments': [
+                r'zelle',
             ]
         }
 
