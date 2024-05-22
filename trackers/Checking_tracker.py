@@ -22,7 +22,7 @@ class CheckingTracker:
                 r'zelle from', 
             ],
             'payments': [
-                r'zelle',
+                r'zelle', r'purchase auth'
             ]
         }
 
