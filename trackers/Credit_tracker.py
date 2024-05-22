@@ -156,22 +156,7 @@ class CreditTracker:
         self.process_dates()  # Convert and validate the date format
         self.sort_data()  # Sort the data by date and category
         self.display_data()  # Display the processed data and monthly totals
-        
 
-class SavingsTracker:
-    def __init__(self, file_path):
-        self.file_path = file_path
-        self.df = None
-
-        self.categories = {
-        
-        }
-        
-
-        
-        
-        
-        
         
 # Instantiate and run the ExpenseTracker
 credit_csv_file_path = "/Users/drewdrummond/Documents/coding projects/Python_expense_tracker/CSV's/new_credit.csv"
